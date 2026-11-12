@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#05070d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Comando · Radar Charles</title>
+<link rel="icon" href="/icon.png">
+<link rel="apple-touch-icon" href="/icon.png">
+<style>
+  :root { --bg:#05070d; --pad:#111a2e; --line:rgba(140,180,255,.16); --txt:#e8eefc; --mut:#8b9bbd; --acc:#6fd3ff; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
+  html, body { height: 100%; background: radial-gradient(120% 70% at 50% 0%, #13203d 0%, var(--bg) 60%); color: var(--txt);
+    font: 16px/1.3 system-ui, -apple-system, "Segoe UI", sans-serif; overscroll-behavior: none; }
+  main { max-width: 420px; margin: 0 auto; padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 18px; min-height: 100%; }
+  header { display: flex; align-items: center; gap: 12px; }
+  header img { width: 40px; height: 40px; border-radius: 10px; }
+  header b { font-size: 18px; display: block; } header small { color: var(--mut); }
+  #st { margin-left: auto; font-size: 12px; color: var(--mut); display: flex; align-items: center; gap: 6px; }
+  #st i { width: 8px; height: 8px; border-radius: 50%; background: #3ddc97; }
+  #st.off i { background: #ff3b4e; }
+  button { font: inherit; color: var(--txt); background: var(--pad); border: 1px solid var(--line); border-radius: 16px;
+    cursor: pointer; touch-action: manipulation; transition: transform .08s, background .15s; }
+  button:active, button.hit { transform: scale(.94); background: #1d2c4d; }
+  .dpad { position: relative; width: min(84vw, 330px); aspect-ratio: 1; margin: 4px auto 0; border-radius: 50%;
+    background: radial-gradient(circle, #16223d 0%, #0c1426 70%); border: 1px solid var(--line);
+    box-shadow: 0 20px 50px rgba(0,0,0,.5), inset 0 2px 0 rgba(255,255,255,.04); }
+  .dpad button { position: absolute; width: 33%; height: 33%; border-radius: 22px; font-size: 30px; background: transparent; border: 0; }
+  .dpad .up { top: 2%; left: 33.5%; } .dpad .down { bottom: 2%; left: 33.5%; }
+  .dpad .left { left: 2%; top: 33.5%; } .dpad .right { right: 2%; top: 33.5%; }
+  .dpad .ok { top: 31%; left: 31%; width: 38%; height: 38%; border-radius: 50%; font-size: 22px; font-weight: 700;
+    background: linear-gradient(160deg, #2a8fc0, #146089); border: 0; box-shadow: 0 6px 18px rgba(111,211,255,.3); }
+  .lbl { text-align: center; color: var(--mut); font-size: 13px; margin-top: -6px; }
+  .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .row button { padding: 16px 6px; font-size: 15px; font-weight: 600; }
+  .c-red { color: #ff6b78 } .c-green { color: #3ddc97 } .c-blue { color: #7aa9ff }
+  h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--mut); font-weight: 600; }
+  #cities { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  #cities button { padding: 12px 10px; text-align: left; font-size: 14px; display: flex; justify-content: space-between; }
+  #cities span { color: var(--mut); }
+  #types { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; }
+  #types button { padding: 8px 0 4px; font-size: 18px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  #types small { font-size: 11px; color: var(--mut); font-family: monospace; }
+  #events { display: grid; gap: 8px; }
+  #events button { padding: 12px 12px; text-align: left; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
+  #events span { color: var(--mut); font-size: 13px; }
+  /* interruptor de modo */
+  .mode { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; gap: 4px; border-radius: 14px;
+    background: #0c1426; border: 1px solid var(--line); }
+  .mode button { border: 0; background: transparent; padding: 11px; font-weight: 700; color: var(--mut); border-radius: 10px; }
+  .mode button.on { background: #1f3460; color: var(--txt); box-shadow: 0 0 0 1px var(--acc) inset; }
+  body.touch .dpad, body.touch .lbl.keys { display: none; }
+  body:not(.touch) #padwrap { display: none; }
+  /* área tátil */
+  #pad { position: relative; height: min(58vh, 430px); border-radius: 24px; overflow: hidden; touch-action: none;
+    background: radial-gradient(120% 90% at 50% 40%, #16264a 0%, #0b1324 70%); border: 1px solid var(--line);
+    box-shadow: inset 0 0 60px rgba(111,211,255,.07); }
+  #pad .hint { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 10px;
+    color: var(--mut); font-size: 14px; pointer-events: none; padding: 20px; }
+  #pad .hint b { color: var(--txt); font-size: 16px; }
+  #pad .hint .big { font-size: 34px; letter-spacing: 8px; opacity: .5; }
+  .touchdot { position: absolute; width: 54px; height: 54px; margin: -27px 0 0 -27px; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle, rgba(111,211,255,.55), rgba(111,211,255,0) 70%); }
+  #gest { text-align: center; color: var(--acc); font-size: 13px; min-height: 18px; margin-top: 8px; font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="/icon.png" alt="">
+    <div><b>Comando</b><small>Radar Charles</small></div>
+    <div id="st"><i></i><span>ligado</span></div>
+  </header>
+
+  <div class="mode">
+    <button id="m-keys" class="on">🎮 Botões</button>
+    <button id="m-touch">👆 Modo toque</button>
+  </div>
+
+  <div class="dpad">
+    <button class="up" data-c="up" aria-label="Subir">▲</button>
+    <button class="left" data-c="left" aria-label="Cidade anterior">◀</button>
+    <button class="ok" data-c="ok">OK</button>
+    <button class="right" data-c="right" aria-label="Próxima cidade">▶</button>
+    <button class="down" data-c="down" aria-label="Descer">▼</button>
+  </div>
+  <div class="lbl keys">◀ ▶ cidade · ▲ ▼ lista · OK troca Notícias ⇄ Avisos</div>
+
+  <div id="padwrap">
+    <div id="pad">
+      <div class="hint">
+        <div class="big">⇠ ⇡ ⇣ ⇢</div>
+        <b>Desliza para navegar</b>
+        <div>← → muda de cidade · ↑ ↓ percorre a lista · toque = OK</div>
+        <div><b>Com o mapa aberto:</b> arrasta para mover · 2 dedos para ampliar · toque duplo para centrar</div>
+      </div>
+    </div>
+    <div id="gest"></div>
+  </div>
+
+  <div class="row">
+    <button data-c="pageup">⏫ +5</button>
+    <button data-c="back">↩ Voltar</button>
+    <button data-c="pagedown">⏬ −5</button>
+  </div>
+  <div class="row">
+    <button data-c="red" class="c-red">⚡ Raio</button>
+    <button data-c="green" class="c-green">🔄 Rotação</button>
+    <button data-c="help" class="c-blue">❔ Ajuda</button>
+  </div>
+  <div class="row">
+    <button data-c="map" style="color:#ffd23f">🗺 Mapa</button>
+    <button data-c="card" title="No mapa: completo → mínimo → escondido">🗂 Cartão</button>
+    <button data-c="tv">📺 Modo TV</button>
+  </div>
+
+  <h3>Evento no ecrã <button data-c="home" style="float:right;padding:4px 10px;font-size:12px">🌐 Lista na TV</button></h3>
+  <div class="row">
+    <button data-c="tab:live" style="color:#ff6b78">🔴 Ao vivo</button>
+    <button data-c="tab:all" style="color:#3ddc97">🌐 Todos</button>
+    <button data-c="clear">✖ Limpar</button>
+  </div>
+  <div id="types"></div>
+  <input id="q" type="search" placeholder="🔎 Pesquisar eventos na TV…" autocomplete="off"
+    style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--txt);font:inherit;font-size:15px">
+  <div id="events"></div>
+
+  <h3>Ir para a cidade</h3>
+  <div id="cities"></div>
+</main>
+<script>
+const st = document.getElementById("st");
+async function send(cmd, el) {
+  if (navigator.vibrate) navigator.vibrate(12);
+  if (el) { el.classList.add("hit"); setTimeout(() => el.classList.remove("hit"), 120); }
+  try {
+    const r = await fetch("/api/cmd", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cmd }) });
+    if (!r.ok) throw 0;
+    st.className = ""; st.querySelector("span").textContent = "ligado";
+  } catch { st.className = "off"; st.querySelector("span").textContent = "sem ligação"; }
+}
+// toque: dispara logo; manter carregado nas setas repete
+let rep = null;
+document.addEventListener("pointerdown", e => {
+  const b = e.target.closest("button[data-c]"); if (!b) return;
+  e.preventDefault(); send(b.dataset.c, b);
+  if (["up", "down"].includes(b.dataset.c)) {
+    clearInterval(rep);
+    rep = setTimeout(function loop() { send(b.dataset.c, b); rep = setTimeout(loop, 140); }, 450);
+  }
+});
+["pointerup", "pointercancel", "pointerleave"].forEach(ev => document.addEventListener(ev, () => clearTimeout(rep)));
+
+async function loadCities() {
+  try {
+    const s = await (await fetch("/api/state")).json();
+    document.getElementById("cities").innerHTML = s.weather.map((c, i) =>
+      `<button data-c="city:${i + 1}"><b>${c.city}</b><span>${Math.round(c.gust)} km/h</span></button>`).join("");
+  } catch {}
+}
+loadCities(); setInterval(loadCities, 60000);
+
+// eventos: carregar num muda o que a TV/PC está a mostrar
+async function loadEvents() {
+  try {
+    const evs = await (await fetch("/api/events")).json();
+    const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    document.getElementById("events").innerHTML = evs.map(e =>
+      `<button data-c="event:${esc(e.id)}" style="${e.ativo ? "" : "opacity:.55"}"><b>${esc(e.icone)} ${esc(e.nome)}</b>` +
+      `<span>${e.sempre ? "geral" : e.ativo ? "🔴 a acontecer" : "✓ já aconteceu" + (e.quando ? " · " + esc(e.quando) : "")}${e.pressure != null ? " · " + Math.round(e.pressure) + " hPa" : ""}</span></button>`).join("");
+  } catch {}
+}
+loadEvents(); setInterval(loadEvents, 30000);
+// tipos 1–9 (mesma ordem e números que na TV) e pesquisa: mudam a lista de eventos no ecrã
+document.getElementById("types").innerHTML = ["🌀", "🏘", "🔥", "📈", "🌋", "🌊", "🏜", "🌡", "🌐", "⚔"]
+  .map((ic, i) => `<button data-c="type:${(i + 1) % 10}">${ic}<small>${(i + 1) % 10}</small></button>`).join("");
+let qTimer = null;
+document.getElementById("q").addEventListener("input", e => {
+  clearTimeout(qTimer);
+  const v = e.target.value.replace(/[^\p{L}\p{N} .,'-]/gu, "").slice(0, 40);
+  qTimer = setTimeout(() => sendQuiet("search:" + v), 350);
+});
+
+// ---------- modo: botões ou toque ----------
+function setMode(touch) {
+  document.body.classList.toggle("touch", touch);
+  document.getElementById("m-touch").classList.toggle("on", touch);
+  document.getElementById("m-keys").classList.toggle("on", !touch);
+  try { localStorage.setItem("radar-mode", touch ? "touch" : "keys"); } catch {}
+}
+document.getElementById("m-touch").onclick = () => setMode(true);
+document.getElementById("m-keys").onclick = () => setMode(false);
+try { setMode(localStorage.getItem("radar-mode") === "touch"); } catch {}
+
+// envio sem vibrar (para os gestos contínuos)
+function sendQuiet(cmd) {
+  fetch("/api/cmd", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cmd }) })
+    .catch(() => { st.className = "off"; st.querySelector("span").textContent = "sem ligação"; });
+}
+
+// ---------- área tátil: deslizar, tocar, arrastar e pinça ----------
+const pad = document.getElementById("pad"), gest = document.getElementById("gest");
+const ptrs = new Map();               // dedos no ecrã
+let g = null, acc = { dx: 0, dy: 0, scale: 1 }, flushTimer = null, tapTimer = null;
+const showGest = t => { gest.textContent = t; clearTimeout(showGest.h); showGest.h = setTimeout(() => gest.textContent = "", 900); };
+const pinchDist = () => { const [a, b] = [...ptrs.values()]; return Math.hypot(a.x - b.x, a.y - b.y); };
+
+function dot(id, x, y) {
+  let d = pad.querySelector(`[data-p="${id}"]`);
+  if (!d) { d = document.createElement("div"); d.className = "touchdot"; d.dataset.p = id; pad.appendChild(d); }
+  const r = pad.getBoundingClientRect(); d.style.left = (x - r.left) + "px"; d.style.top = (y - r.top) + "px";
+}
+function flush() {                    // junta os movimentos e envia ~16x por segundo
+  flushTimer = null;
+  if (Math.abs(acc.dx) + Math.abs(acc.dy) >= 1) sendQuiet(`drag:${Math.round(acc.dx)},${Math.round(acc.dy)}`);
+  if (Math.abs(Math.log(acc.scale)) > .015) sendQuiet(`pinch:${acc.scale.toFixed(3)}`);
+  acc = { dx: 0, dy: 0, scale: 1 };
+}
+const schedule = () => { if (!flushTimer) flushTimer = setTimeout(flush, 60); };
+
+pad.addEventListener("pointerdown", e => {
+  e.preventDefault(); pad.setPointerCapture(e.pointerId);
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); dot(e.pointerId, e.clientX, e.clientY);
+  if (ptrs.size === 1) g = { x0: e.clientX, y0: e.clientY, t0: performance.now(), moved: 0, multi: false };
+  else if (ptrs.size === 2 && g) { g.multi = true; g.dPrev = pinchDist(); }
+});
+pad.addEventListener("pointermove", e => {
+  const p = ptrs.get(e.pointerId); if (!p || !g) return;
+  const dx = e.clientX - p.x, dy = e.clientY - p.y;
+  p.x = e.clientX; p.y = e.clientY; dot(e.pointerId, e.clientX, e.clientY);
+  if (ptrs.size >= 2) {               // pinça: amplia / reduz o mapa
+    const d = pinchDist(); if (g.dPrev) acc.scale *= d / g.dPrev; g.dPrev = d;
+    showGest(acc.scale >= 1 ? "🔍 ampliar" : "🔍 reduzir");
+  } else if (!g.multi) {              // um dedo: arrastar o mapa
+    acc.dx += dx; acc.dy += dy; g.moved += Math.abs(dx) + Math.abs(dy);
+  }
+  schedule();
+});
+function endPointer(e) {
+  if (!ptrs.has(e.pointerId)) return;
+  ptrs.delete(e.pointerId);
+  const d = pad.querySelector(`[data-p="${e.pointerId}"]`); if (d) d.remove();
+  if (ptrs.size === 1 && g) g.dPrev = null;
+  if (ptrs.size || !g) return;
+  const dt = performance.now() - g.t0, tx = e.clientX - g.x0, ty = e.clientY - g.y0;
+  if (!g.multi && g.moved < 14 && dt < 350) {          // toque (ou toque duplo)
+    if (tapTimer) { clearTimeout(tapTimer); tapTimer = null; sendQuiet("fit"); showGest("🎯 centrar mapa"); }
+    else tapTimer = setTimeout(() => { tapTimer = null; send("ok"); showGest("OK"); }, 260);
+  } else if (!g.multi && dt < 500 && Math.max(Math.abs(tx), Math.abs(ty)) > 45) { // deslizar rápido
+    const dir = Math.abs(tx) > Math.abs(ty) ? (tx < 0 ? "left" : "right") : (ty < 0 ? "up" : "down");
+    if (navigator.vibrate) navigator.vibrate(12);
+    sendQuiet("swipe:" + dir);
+    showGest({ left: "← próxima cidade", right: "→ cidade anterior", up: "↑ descer na lista", down: "↓ subir na lista" }[dir]);
+  }
+  g = null;
+}
+["pointerup", "pointercancel"].forEach(ev => pad.addEventListener(ev, endPointer));
+
+// roda do rato na área tátil = ampliar/reduzir o mapa (para usar no PC)
+pad.addEventListener("wheel", e => {
+  e.preventDefault();
+  acc.scale *= Math.exp(-e.deltaY / 400);
+  showGest(e.deltaY < 0 ? "🔍 ampliar" : "🔍 reduzir");
+  schedule();
+}, { passive: false });
+
+// ---------- no PC: o teclado também comanda a TV ----------
+const PC = new URLSearchParams(location.search).has("pc");
+if (PC) document.querySelector("header small").textContent = "Radar Charles · teclado: setas, Enter, Esc, M, +/−";
+const KEYMAP = { ArrowLeft: "left", ArrowRight: "right", ArrowUp: "up", ArrowDown: "down", Enter: "ok", " ": "ok",
+  Escape: "back", Backspace: "back", PageUp: "pageup", PageDown: "pagedown", m: "map", r: "red", g: "green",
+  h: "help", "?": "help", t: "tv", c: "fit", "0": "card", i: "card", e: "home" };
+document.addEventListener("keydown", e => {
+  if (e.ctrlKey || e.altKey || e.metaKey) return;
+  const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  let cmd = KEYMAP[k];
+  if (!cmd && /^[1-9]$/.test(k)) cmd = "city:" + k;
+  if (!cmd && (k === "+" || k === "=")) cmd = "pinch:1.250";
+  if (!cmd && (k === "-" || k === "_")) cmd = "pinch:0.800";
+  if (!cmd) return;
+  e.preventDefault();
+  const btn = document.querySelector(`button[data-c="${cmd}"]`);
+  cmd.startsWith("pinch") || cmd === "fit" ? sendQuiet(cmd) : send(cmd, btn);
+});
+</script>
+</body>
+</html>

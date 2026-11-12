@@ -1,0 +1,55 @@
+RADAR — eventos naturais e humanos em tempo real (Portugal)
+============================================================
+
+O que é
+-------
+Um painel que se atualiza sozinho com tempestades, cheias, incêndios, sismos,
+vulcões, tsunamis, secas, calor e frio, e ainda guerras, terrorismo,
+ciberataques, pandemias e acidentes nucleares — com mapas, alertas para Portugal
+e notícias. Pode ser mostrado na TV e comandado pelo telemóvel.
+
+IMPORTANTE: o Radar junta dados públicos para informação. Não substitui os avisos
+oficiais. Em caso de perigo segue sempre o IPMA, a Proteção Civil (ANEPC) e a DGS.
+
+Instalar (Windows 10 ou 11)
+---------------------------
+1. Extrai esta pasta para um sítio teu (por exemplo Documentos\Radar).
+2. Faz duplo clique em  instalar.bat
+   - Se não tiveres Python, o instalador instala-o pelo winget
+     (o Windows mostra os termos do Python: aceitas tu, se concordares).
+   - Instala a biblioteca pywebview (a janela da app).
+   - Cria os atalhos "Radar" no menu Iniciar e no ambiente de trabalho.
+   - Pergunta (opcional) por uma chave gratuita da Groq para a IA.
+3. Abre o Radar pelo atalho "Radar".
+
+Precisa de ligação à internet. Na primeira vez demora alguns minutos a preparar
+o histórico (rios, incêndios passados, território na Ucrânia) — o painel funciona
+entretanto.
+
+IA (opcional)
+-------------
+Com uma chave da Groq (https://console.groq.com/keys, gratuita) o Radar resume as
+guerras, reconhece ataques terroristas e ciberataques nas notícias, traduz os
+surtos da OMS e pesquisa em linguagem natural. A chave fica no ficheiro
+groq_key.txt nesta pasta (não a partilhes). Sem chave, tudo o resto funciona.
+
+Ver na TV
+---------
+- No Radar, botão "Enviar para TV": duplicar o ecrã (Miracast) ou abrir no
+  browser da TV o endereço que aparece (mesma rede Wi-Fi).
+- Android TV / Google TV: instala RadarCharles.apk (fontes desconhecidas).
+- Telemóvel como comando: lê o código QR do botão "Enviar para TV".
+- Na primeira vez o Windows pode pedir para permitir o Radar na firewall
+  (redes privadas): é preciso para a TV e o telemóvel se ligarem.
+
+Comandos
+--------
+Lista de eventos: 1–9 e 0 escolhem o tipo, ▲▼ secção, ◀▶ escolher, OK abrir.
+No painel: M mapa, E lista de eventos, T modo TV, ? ajuda.
+
+Fontes de dados
+---------------
+IPMA, Open-Meteo, Copernicus (GloFAS, EFFIS), NASA POWER, Fogos.pt, Proteção
+Civil (ANEPC), USGS, Smithsonian GVP, NOAA (tsunamis), OMS, AIEA, CISA,
+DeepStateMap, Wikipédia, Google Notícias; mapas © Esri, HERE, Garmin,
+OpenStreetMap. Os dados pertencem às respetivas fontes.

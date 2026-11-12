@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radar Charles</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: radial-gradient(90% 80% at 30% 20%, #16264a 0%, #05070d 70%); color: #e8eefc;
+    font: 28px/1.35 system-ui, "Roboto", sans-serif; }
+  main { height: 100%; display: grid; grid-template-columns: 1fr 1.25fr; align-items: center; gap: 2em; padding: 0 6vw; }
+  .logo { text-align: center; }
+  .spin { width: 9em; height: 9em; margin: 0 auto .6em; border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent 0 40%, rgba(111,211,255,.15) 55%, #6fd3ff 70%, transparent 71%);
+    animation: r 1.6s linear infinite; position: relative; }
+  .spin::after { content: ""; position: absolute; inset: 38%; border-radius: 50%; background: #ff8a2a; box-shadow: 0 0 30px #ff8a2a; }
+  @keyframes r { to { transform: rotate(360deg); } }
+  h1 { font-size: 1.9em; } h1 span { color: #6fd3ff; }
+  .card { background: rgba(10,16,30,.6); border: 1px solid rgba(140,180,255,.18); border-radius: 1em; padding: 1.4em 1.6em; }
+  #status { color: #c8d4ee; min-height: 3em; margin-bottom: 1em; }
+  label { color: #8b9bbd; font-size: .8em; display: block; margin-bottom: .3em; }
+  input { width: 100%; font: inherit; font-size: 1.1em; padding: .45em .7em; border-radius: .5em; border: 2px solid rgba(140,180,255,.25);
+    background: #0b1222; color: #fff; margin-bottom: .8em; }
+  .row { display: flex; gap: .7em; }
+  button { flex: 1; font: inherit; font-weight: 700; padding: .55em .8em; border-radius: .6em; border: 2px solid transparent;
+    background: #1a2848; color: #e8eefc; }
+  button.main { background: #2a8fc0; }
+  input:focus, button:focus { outline: none; border-color: #ffd23f; box-shadow: 0 0 0 4px rgba(255,210,63,.3); }
+  small { display: block; color: #8b9bbd; font-size: .7em; margin-top: 1em; }
+</style>
+</head>
+<body>
+<main>
+  <div class="logo"><div class="spin"></div><h1>Radar <span>Charles</span></h1></div>
+  <div class="card">
+    <div id="status">A preparar…</div>
+    <label for="addr">Endereço do PC (aparece no PC em "📡 Enviar para TV")</label>
+    <input id="addr" inputmode="decimal" placeholder="192.168.1.177:3000">
+    <div class="row">
+      <button class="main" id="go">Ligar</button>
+      <button id="scan">Procurar</button>
+      <button id="quit">Sair</button>
+    </div>
+    <small>Usa as setas do comando para escolher e OK para carregar. No painel: carrega OK durante 2 s para voltar aqui.</small>
+  </div>
+</main>
+<script>
+  const R = window.Radar, $ = id => document.getElementById(id);
+  $("addr").value = R ? R.saved() : "";
+  $("go").onclick = () => R && R.connect($("addr").value);
+  $("scan").onclick = () => R && R.scan();
+  $("quit").onclick = () => R && R.quit();
+  $("addr").addEventListener("keydown", e => { if (e.keyCode === 13) { e.preventDefault(); $("go").focus(); } });
+  setInterval(() => { if (R) $("status").textContent = R.status(); }, 400);
+  setTimeout(() => $("go").focus(), 300);
+</script>
+</body>
+</html>
